@@ -1,0 +1,15 @@
+Flask
+Flask-Login
+Flask-SQLAlchemy
+psycopg2-binary
+Werkzeug
+python-dotenv
+pandas
+numpy
+requests
+python-dateutil
+plotly
+prophet
+scikit-learn
+xgboost
+joblib

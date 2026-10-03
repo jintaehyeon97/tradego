@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>{{country}} · TRADEGO TERMINAL</title>
+
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
+<style>
+    :root{
+        --bg:#0a0d12;
+        --panel:#12161d;
+        --panel-alt:#171c25;
+        --border:#232935;
+        --text:#e4e7eb;
+        --text-dim:#7c8798;
+        --text-faint:#4b5563;
+        --amber:#ff9f1c;
+        --amber-dim:#7a5217;
+        --up:#00c853;
+        --down:#ff5252;
+        --blue:#4fc3f7;
+        --mono:'IBM Plex Mono',monospace;
+        --sans:'Inter',sans-serif;
+    }
+
+    *{box-sizing:border-box;}
+
+    body{
+        margin:0;
+        background:var(--bg);
+        color:var(--text);
+        font-family:var(--sans);
+        font-size:13px;
+    }
+
+    .topbar{
+        height:48px;
+        border-bottom:1px solid var(--border);
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        padding:0 24px;
+        font-family:var(--mono);
+        font-size:11px;
+        color:var(--text-dim);
+    }
+    .topbar span.amber{ color:var(--amber); }
+
+    .container{
+        max-width:1040px;
+        margin:0 auto;
+        padding:28px 24px;
+    }
+
+    .header-row{
+        display:flex;
+        justify-content:space-between;
+        align-items:baseline;
+        margin-bottom:18px;
+    }
+
+    h1{
+        font-family:var(--mono);
+        font-size:22px;
+        font-weight:600;
+        margin:0;
+        letter-spacing:0.5px;
+    }
+
+    .subtitle{
+        font-family:var(--mono);
+        font-size:11px;
+        color:var(--text-faint);
+        margin-top:4px;
+    }
+
+    .risk-tag{
+        font-family:var(--mono);
+        font-size:10px;
+        letter-spacing:1px;
+        padding:4px 10px;
+        border:1px solid var(--border);
+    }
+    .risk-high{ color:var(--down); border-color:var(--down); }
+    .risk-mid{ color:var(--amber); border-color:var(--amber-dim); }
+    .risk-low{ color:var(--up); border-color:var(--up); }
+
+    .panel{
+        background:var(--panel);
+        border:1px solid var(--border);
+        margin-bottom:16px;
+    }
+
+    .panel-head{
+        padding:10px 16px;
+        border-bottom:1px solid var(--border);
+        font-family:var(--mono);
+        font-size:10.5px;
+        color:var(--text-faint);
+        letter-spacing:1px;
+    }
+
+    .panel-body{ padding:16px; }
+
+    .strip{
+        display:flex;
+        border:1px solid var(--border);
+        margin-bottom:16px;
+        background:var(--panel);
+    }
+
+    .strip-item{
+        flex:1;
+        padding:14px 20px;
+        border-right:1px solid var(--border);
+    }
+    .strip-item:last-child{ border-right:none; }
+
+    .strip-label{
+        font-family:var(--mono);
+        font-size:10px;
+        color:var(--text-faint);
+        letter-spacing:1px;
+        margin-bottom:6px;
+    }
+
+    .strip-value{
+        font-family:var(--mono);
+        font-size:20px;
+        font-weight:600;
+        color:var(--text);
+        font-variant-numeric:tabular-nums;
+    }
+
+    #graph{ width:100%; height:420px; }
+
+    .ai-box{
+        white-space:pre-line;
+        font-family:var(--sans);
+        font-size:13px;
+        line-height:1.7;
+        color:var(--text-dim);
+    }
+
+    .back-link{
+        display:inline-block;
+        margin-top:4px;
+    }
+
+    button{
+        background:none;
+        border:1px solid var(--border);
+        padding:9px 16px;
+        border-radius:2px;
+        color:var(--text-dim);
+        font-family:var(--mono);
+        font-size:11px;
+        letter-spacing:0.5px;
+        cursor:pointer;
+    }
+    button:hover{
+        border-color:var(--amber);
+        color:var(--amber);
+    }
+</style>
+</head>
+
+<body>
+
+<div class="topbar">
+    <span>HOME / PRICE ANALYSIS / <span class="amber">{{country}}</span></span>
+    <span>DETAIL VIEW</span>
+</div>
+
+<div class="container">
+
+    <div class="header-row">
+        <div>
+            <h1>{{country}}</h1>
+            <div class="subtitle">COUNTRY DETAIL · UNIT PRICE TREND &amp; FORECAST</div>
+        </div>
+        {% if row['리스크'] == '높음' %}
+        <span class="risk-tag risk-high">RISK · {{row['리스크']}}</span>
+        {% elif row['리스크'] == '중간' %}
+        <span class="risk-tag risk-mid">RISK · {{row['리스크']}}</span>
+        {% else %}
+        <span class="risk-tag risk-low">RISK · {{row['리스크']}}</span>
+        {% endif %}
+    </div>
+
+    <div class="strip">
+        <div class="strip-item">
+            <div class="strip-label">평균 단가</div>
+            <div class="strip-value">{{ "%.2f"|format(row['평균_raw']) }}</div>
+        </div>
+        <div class="strip-item">
+            <div class="strip-label">트렌드</div>
+            <div class="strip-value">{{row['트렌드']}}</div>
+        </div>
+    </div>
+
+    <div class="panel">
+        <div class="panel-head">PRICE HISTORY</div>
+        <div class="panel-body">
+            <div id="graph"></div>
+        </div>
+    </div>
+
+    <div class="panel">
+        <div class="panel-head">AI COMMENTARY</div>
+        <div class="panel-body">
+            <div class="ai-box">{{row['AI추천이유']}}</div>
+        </div>
+    </div>
+
+    <form action="/" method="get" class="back-link">
+        <button type="submit">&#9664; BACK TO RANKING</button>
+    </form>
+
+</div>
+
+<script>
+var graph = {{ graphJSON | safe }};
+var termLayout = Object.assign({}, graph.layout, {
+    paper_bgcolor:'#12161d',
+    plot_bgcolor:'#12161d',
+    font:{ family:'IBM Plex Mono, monospace', color:'#7c8798', size:11 },
+    xaxis:Object.assign({}, graph.layout.xaxis, {gridcolor:'#232935', zerolinecolor:'#232935'}),
+    yaxis:Object.assign({}, graph.layout.yaxis, {gridcolor:'#232935', zerolinecolor:'#232935'}),
+    margin:{t:20,r:20,b:40,l:60}
+});
+Plotly.newPlot('graph', graph.data, termLayout, {displayModeBar:false});
+</script>
+
+</body>
+</html>

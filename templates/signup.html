@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>SIGN UP · TRADEGO TERMINAL</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+    :root{
+        --bg:#0a0d12; --panel:#12161d; --panel-alt:#171c25; --border:#232935;
+        --text:#e4e7eb; --text-dim:#7c8798; --text-faint:#4b5563;
+        --amber:#ff9f1c; --amber-dim:#7a5217; --down:#ff5252;
+        --mono:'IBM Plex Mono',monospace; --sans:'Inter',sans-serif;
+    }
+    *{box-sizing:border-box;}
+    body{
+        margin:0; min-height:100vh; background:var(--bg); color:var(--text);
+        font-family:var(--sans); display:flex; align-items:center; justify-content:center;
+    }
+    .card{
+        width:360px; background:var(--panel); border:1px solid var(--border);
+        padding:32px;
+    }
+    .brand{ font-family:var(--mono); font-weight:700; font-size:18px; margin-bottom:4px; }
+    .brand span{ color:var(--amber); }
+    .sub{ font-family:var(--mono); font-size:10px; color:var(--text-faint); letter-spacing:1px; margin-bottom:28px; }
+
+    label{ font-family:var(--mono); font-size:10px; color:var(--text-faint); letter-spacing:0.5px; display:block; margin-bottom:6px; }
+    input{
+        width:100%; background:var(--panel-alt); border:1px solid var(--border);
+        padding:10px; border-radius:2px; color:var(--text); font-family:var(--mono);
+        font-size:13px; margin-bottom:16px;
+    }
+    input:focus{ outline:none; border-color:var(--amber); }
+
+    button{
+        width:100%; background:var(--amber); border:1px solid var(--amber);
+        padding:10px; border-radius:2px; color:#1a1200; font-family:var(--mono);
+        font-weight:600; font-size:13px; cursor:pointer; margin-top:8px;
+    }
+    button:hover{ background:#ffb347; }
+
+    .flash{
+        background:rgba(255,82,82,0.1); border:1px solid var(--down); color:var(--down);
+        font-family:var(--mono); font-size:11px; padding:8px 10px; margin-bottom:16px; border-radius:2px;
+    }
+
+    .footer-link{ margin-top:20px; text-align:center; font-family:var(--mono); font-size:11px; color:var(--text-dim); }
+    .footer-link a{ color:var(--amber); text-decoration:none; }
+    .footer-link a:hover{ text-decoration:underline; }
+</style>
+</head>
+<body>
+
+<div class="card">
+    <div class="brand">TRADE<span>GO</span></div>
+    <div class="sub">GLOBAL PRICE TERMINAL · SIGN UP</div>
+
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for m in messages %}
+            <div class="flash">{{ m }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <form method="POST">
+        <label>아이디</label>
+        <input type="text" name="username" required autofocus>
+
+        <label>비밀번호 (4자 이상)</label>
+        <input type="password" name="password" required minlength="4">
+
+        <button type="submit">회원가입</button>
+    </form>
+
+    <div class="footer-link">
+        이미 계정이 있으신가요? <a href="{{ url_for('auth.login') }}">로그인</a>
+    </div>
+</div>
+
+</body>
+</html>

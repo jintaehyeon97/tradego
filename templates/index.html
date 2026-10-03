@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>TRADEGO TERMINAL</title>
+
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet"/>
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<style>
+    :root{
+        --bg:#0a0d12;
+        --panel:#12161d;
+        --panel-alt:#171c25;
+        --border:#232935;
+        --text:#e4e7eb;
+        --text-dim:#7c8798;
+        --text-faint:#4b5563;
+        --amber:#ff9f1c;
+        --amber-dim:#7a5217;
+        --up:#00c853;
+        --down:#ff5252;
+        --blue:#4fc3f7;
+        --mono:'IBM Plex Mono',monospace;
+        --sans:'Inter',sans-serif;
+    }
+
+    *{box-sizing:border-box;}
+
+    body{
+        margin:0;
+        background:var(--bg);
+        color:var(--text);
+        font-family:var(--sans);
+        display:flex;
+        font-size:13px;
+    }
+
+    ::selection{ background:var(--amber-dim); color:#fff; }
+
+    /* ================= SIDEBAR ================= */
+    .sidebar{
+        width:220px;
+        min-height:100vh;
+        background:var(--panel);
+        border-right:1px solid var(--border);
+        display:flex;
+        flex-direction:column;
+    }
+
+    .brand{
+        padding:22px 20px;
+        border-bottom:1px solid var(--border);
+    }
+
+    .brand-mark{
+        font-family:var(--mono);
+        font-weight:700;
+        font-size:15px;
+        letter-spacing:0.5px;
+        color:var(--text);
+    }
+    .brand-mark span{ color:var(--amber); }
+
+    .brand-sub{
+        font-family:var(--mono);
+        font-size:10px;
+        color:var(--text-faint);
+        margin-top:4px;
+        letter-spacing:1px;
+    }
+
+    .nav{ padding:14px 0; flex:1; }
+
+    .nav-section-label{
+        font-family:var(--mono);
+        font-size:10px;
+        color:var(--text-faint);
+        letter-spacing:1.5px;
+        padding:10px 20px 6px;
+    }
+
+    .nav-item{
+        display:flex;
+        align-items:center;
+        gap:10px;
+        padding:9px 20px;
+        color:var(--text-dim);
+        font-size:12.5px;
+        cursor:default;
+        border-left:2px solid transparent;
+    }
+
+    .nav-item.active{
+        color:var(--text);
+        background:var(--panel-alt);
+        border-left:2px solid var(--amber);
+    }
+
+    .nav-key{
+        font-family:var(--mono);
+        font-size:10px;
+        color:var(--text-faint);
+        border:1px solid var(--border);
+        border-radius:2px;
+        padding:1px 4px;
+        min-width:20px;
+        text-align:center;
+    }
+
+    .sidebar-foot{
+        padding:14px 20px;
+        border-top:1px solid var(--border);
+        font-family:var(--mono);
+        font-size:10px;
+        color:var(--text-faint);
+        display:flex;
+        justify-content:space-between;
+    }
+
+    .dot{
+        width:6px;height:6px;border-radius:50%;
+        background:var(--up);
+        display:inline-block;
+        margin-right:5px;
+        box-shadow:0 0 5px var(--up);
+    }
+
+    /* ================= MAIN ================= */
+    .main{ flex:1; min-width:0; }
+
+    .topbar{
+        height:48px;
+        border-bottom:1px solid var(--border);
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        padding:0 24px;
+        font-family:var(--mono);
+        font-size:11px;
+        color:var(--text-dim);
+    }
+
+    #clock{ color:var(--text); }
+
+    .content{ padding:24px; }
+
+    /* ================= PANEL ================= */
+    .panel{
+        background:var(--panel);
+        border:1px solid var(--border);
+        margin-bottom:16px;
+    }
+
+    .panel-head{
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        padding:10px 16px;
+        border-bottom:1px solid var(--border);
+        font-family:var(--mono);
+        font-size:10.5px;
+        color:var(--text-faint);
+        letter-spacing:1px;
+    }
+
+    .panel-body{ padding:16px; }
+
+    /* ================= FORM ================= */
+    .form-box{
+        display:flex;
+        gap:10px;
+        align-items:center;
+        flex-wrap:wrap;
+    }
+
+    label.field-label{
+        font-family:var(--mono);
+        font-size:10px;
+        color:var(--text-faint);
+        letter-spacing:0.5px;
+        display:block;
+        margin-bottom:4px;
+    }
+
+    .field{ display:flex; flex-direction:column; }
+
+    input, select{
+        background:var(--panel-alt);
+        border:1px solid var(--border);
+        padding:8px 10px;
+        border-radius:2px;
+        color:var(--text);
+        font-family:var(--mono);
+        font-size:12px;
+    }
+    input:focus, select:focus{
+        outline:none;
+        border-color:var(--amber);
+    }
+
+    input{ width:100px; }
+
+    button{
+        background:var(--amber);
+        border:1px solid var(--amber);
+        padding:8px 18px;
+        border-radius:2px;
+        color:#1a1200;
+        font-family:var(--mono);
+        font-weight:600;
+        font-size:12px;
+        letter-spacing:0.5px;
+        cursor:pointer;
+        align-self:flex-end;
+    }
+    button:hover{ background:#ffb347; }
+
+    .select2-container .select2-selection--single{
+        background:var(--panel-alt) !important;
+        border:1px solid var(--border) !important;
+        border-radius:2px !important;
+        height:36px !important;
+    }
+    .select2-selection__rendered{
+        color:var(--text) !important;
+        line-height:34px !important;
+        font-family:var(--mono);
+        font-size:12px;
+    }
+    .select2-selection__arrow{ height:34px !important; }
+
+    /* ================= SELECT2 드롭다운 팝업 (다크 테마) ================= */
+    /* select2가 body 최상단에 별도로 붙이는 레이어라 위 스타일과 별개로 지정 필요 */
+    .select2-dropdown{
+        background:var(--panel) !important;
+        border:1px solid var(--border) !important;
+        border-radius:2px !important;
+        font-family:var(--mono);
+        font-size:12px;
+    }
+
+    .select2-search--dropdown{
+        background:var(--panel) !important;
+        padding:8px !important;
+    }
+    .select2-search--dropdown .select2-search__field{
+        background:var(--panel-alt) !important;
+        border:1px solid var(--border) !important;
+        color:var(--text) !important;
+        border-radius:2px !important;
+        padding:6px 8px !important;
+        outline:none !important;
+    }
+
+    .select2-results__options{
+        background:var(--panel) !important;
+        max-height:280px !important;
+    }
+
+    .select2-results__option{
+        background:var(--panel) !important;
+        color:var(--text-dim) !important;
+        padding:8px 12px !important;
+    }
+
+    .select2-results__option--highlighted[aria-selected]{
+        background:var(--amber-dim) !important;
+        color:var(--text) !important;
+    }
+
+    .select2-results__option[aria-selected="true"]{
+        background:var(--panel-alt) !important;
+        color:var(--amber) !important;
+    }
+
+    /* optgroup 라벨(예: "인기 품목", "전체 품목") */
+    .select2-results__group{
+        background:var(--panel) !important;
+        color:var(--text-faint) !important;
+        font-size:10px !important;
+        letter-spacing:1px;
+        padding:8px 12px 4px !important;
+    }
+
+    /* 스크롤바도 다크 테마에 맞춤 */
+    .select2-results__options::-webkit-scrollbar{ width:8px; }
+    .select2-results__options::-webkit-scrollbar-track{ background:var(--panel); }
+    .select2-results__options::-webkit-scrollbar-thumb{ background:var(--border); border-radius:4px; }
+
+    /* ================= PROGRESS ================= */
+    .progress-box{
+        display:none;
+        padding:14px 16px;
+        background:var(--panel);
+        border:1px solid var(--amber-dim);
+        margin-bottom:16px;
+        font-family:var(--mono);
+    }
+
+    #progressText{ font-size:11px; color:var(--amber); letter-spacing:0.5px; }
+
+    .progress-bar{
+        width:100%;
+        height:3px;
+        background:var(--border);
+        margin-top:10px;
+        overflow:hidden;
+    }
+
+    .progress-fill{
+        height:100%;
+        width:0%;
+        background:var(--amber);
+        transition:0.3s;
+    }
+
+    /* ================= STRIP (KPI) ================= */
+    .strip{
+        display:flex;
+        border:1px solid var(--border);
+        margin-bottom:16px;
+        background:var(--panel);
+    }
+
+    .strip-item{
+        flex:1;
+        padding:14px 20px;
+        border-right:1px solid var(--border);
+    }
+    .strip-item:last-child{ border-right:none; }
+
+    .strip-label{
+        font-family:var(--mono);
+        font-size:10px;
+        color:var(--text-faint);
+        letter-spacing:1px;
+        margin-bottom:6px;
+    }
+
+    .strip-value{
+        font-family:var(--mono);
+        font-size:20px;
+        font-weight:600;
+        color:var(--text);
+        font-variant-numeric:tabular-nums;
+    }
+    .strip-value.amber{ color:var(--amber); }
+
+    .meta-line{
+        font-family:var(--mono);
+        font-size:11px;
+        color:var(--text-dim);
+        letter-spacing:0.3px;
+    }
+    .meta-line b{ color:var(--text); font-weight:600; }
+
+    /* ================= TABLE ================= */
+    table{
+        width:100%;
+        border-collapse:collapse;
+        font-family:var(--mono);
+    }
+
+    th{
+        text-align:right;
+        padding:8px 16px;
+        font-size:10px;
+        color:var(--text-faint);
+        letter-spacing:1px;
+        border-bottom:1px solid var(--border);
+        font-weight:500;
+    }
+    th:first-child{ text-align:left; }
+
+    td{
+        padding:10px 16px;
+        border-bottom:1px solid var(--border);
+        text-align:right;
+        font-size:12.5px;
+        font-variant-numeric:tabular-nums;
+        color:var(--text);
+    }
+    td:first-child{ text-align:left; }
+
+    tr:hover td{ background:var(--panel-alt); }
+
+    .rank{
+        color:var(--text-faint);
+        font-size:11px;
+        margin-right:8px;
+    }
+
+    .country-btn{
+        background:none;
+        border:none;
+        color:var(--blue);
+        padding:0;
+        font-family:var(--mono);
+        font-size:12.5px;
+        cursor:pointer;
+        align-self:auto;
+        letter-spacing:0;
+    }
+    .country-btn:hover{ background:none; text-decoration:underline; }
+
+    .trend-up{ color:var(--up); }
+    .trend-down{ color:var(--down); }
+    .trend-flat{ color:var(--text-dim); }
+
+    .score-bar-wrap{
+        display:inline-flex;
+        align-items:center;
+        gap:8px;
+    }
+    .score-bar{
+        width:50px;
+        height:4px;
+        background:var(--border);
+        position:relative;
+    }
+    .score-bar-fill{
+        position:absolute;
+        left:0;top:0;bottom:0;
+        background:var(--amber);
+    }
+
+    /* ================= GRID ================= */
+    .grid-2{
+        display:grid;
+        grid-template-columns:2fr 1fr;
+        gap:16px;
+    }
+
+    #graph{ width:100%; height:400px; }
+
+    .ai-box{
+        white-space:pre-line;
+        font-family:var(--sans);
+        font-size:13px;
+        line-height:1.7;
+        color:var(--text-dim);
+    }
+    .ai-box b{ color:var(--text); }
+
+    .empty-state{
+        padding:60px 20px;
+        text-align:center;
+        color:var(--text-faint);
+        font-family:var(--mono);
+        font-size:12px;
+    }
+</style>
+</head>
+
+<body>
+
+<div class="sidebar">
+    <div class="brand">
+        <div class="brand-mark">TRADE<span>GO</span></div>
+        <div class="brand-sub">GLOBAL PRICE TERMINAL</div>
+    </div>
+
+    <div class="nav">
+        <div class="nav-section-label">ANALYSIS</div>
+        <div class="nav-item active">
+            <span class="nav-key">F1</span>
+            <span>품목 가격 분석</span>
+        </div>
+        <div class="nav-item">
+            <span class="nav-key">F2</span>
+            <span>즐겨찾기 품목</span>
+        </div>
+        <div class="nav-item">
+            <span class="nav-key">F3</span>
+            <span>환율 모니터</span>
+        </div>
+        <a href="{{ url_for('history') }}" class="nav-item" style="text-decoration:none;">
+            <span class="nav-key">F4</span>
+            <span>분석 기록</span>
+        </a>
+
+        <div class="nav-section-label">SYSTEM</div>
+        <div class="nav-item">
+            <span class="nav-key">F9</span>
+            <span>데이터 소스</span>
+        </div>
+    </div>
+
+    <div class="sidebar-foot" style="flex-direction:column; align-items:stretch; gap:6px;">
+        <div style="display:flex; justify-content:space-between;">
+            <span><span class="dot"></span>{{ current_user.username }}</span>
+            <span id="clock">--:--:--</span>
+        </div>
+        <a href="{{ url_for('auth.logout') }}" style="color:var(--text-faint); text-decoration:none; font-size:10px;">로그아웃 →</a>
+    </div>
+</div>
+
+<div class="main">
+
+    <div class="topbar">
+        <span>HOME &nbsp;/&nbsp; PRICE ANALYSIS</span>
+        <span>KASAN / DATA.GO.KR NITEMTRADE</span>
+    </div>
+
+    <div class="content">
+
+        <!-- 검색 -->
+        <div class="panel">
+            <div class="panel-head"><span>QUERY BUILDER</span></div>
+            <div class="panel-body">
+                <form id="analysisForm" class="form-box">
+
+                    <div class="field">
+                        <label class="field-label">ITEM (HS CODE)</label>
+                        <select name="hs_code" id="hs_select" style="width:300px;">
+                            <option value="">품목 검색</option>
+
+                            <optgroup label="인기 품목">
+                            {% for item in hs_list[:10] %}
+                            <option value="{{item['HS코드']}}">
+                                {{item['품목명']}} ({{item['HS코드']}})
+                            </option>
+                            {% endfor %}
+                            </optgroup>
+
+                            <optgroup label="전체 품목">
+                            {% for item in hs_list %}
+                            <option value="{{item['HS코드']}}">
+                                {{item['품목명']}} ({{item['HS코드']}})
+                            </option>
+                            {% endfor %}
+                            </optgroup>
+                        </select>
+                    </div>
+
+                    <div class="field">
+                        <label class="field-label">CCY</label>
+                        <select name="currency">
+                            <option value="USD">USD</option>
+                            <option value="KRW">KRW</option>
+                        </select>
+                    </div>
+
+                    <div class="field">
+                        <label class="field-label">START (YYYYMM)</label>
+                        <input name="start" placeholder="202001">
+                    </div>
+
+                    <div class="field">
+                        <label class="field-label">END (YYYYMM)</label>
+                        <input name="end" placeholder="202312">
+                    </div>
+
+                    <button type="submit">RUN &#9656;</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- 진행률 -->
+        <div class="progress-box" id="progressBox">
+            <div id="progressText">STANDBY...</div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+        </div>
+
+    {% if tables %}
+
+        <!-- 분석 정보 -->
+        <div class="meta-line" style="margin-bottom:14px;">
+            <b>{{ selected_item_name }}</b> ({{ hs_code }}) &nbsp;·&nbsp; {{ start }} – {{ end }} &nbsp;·&nbsp; {{ selected_currency }}
+        </div>
+
+        <!-- KPI STRIP -->
+        <div class="strip">
+            <div class="strip-item">
+                <div class="strip-label">TOP RANKED</div>
+                <div class="strip-value amber">{{top_country['국가명']}}</div>
+            </div>
+            <div class="strip-item">
+                <div class="strip-label">평균 단가</div>
+                <div class="strip-value">{{top_country['평균']}}</div>
+            </div>
+            <div class="strip-item">
+                <div class="strip-label">AI SCORE</div>
+                <div class="strip-value">{{top_country['AI점수']}}</div>
+            </div>
+        </div>
+
+        <!-- 그래프 + AI -->
+        <div class="grid-2">
+
+            <div class="panel">
+                <div class="panel-head"><span>PRICE HISTORY · TOP 3</span></div>
+                <div class="panel-body">
+                    <div id="graph"></div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-head"><span>AI COMMENTARY</span></div>
+                <div class="panel-body">
+                    <div class="ai-box"><b>{{top_country['국가명']}}</b>&#10;{{top_country['AI추천이유']}}</div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- 테이블 -->
+        <div class="panel">
+            <div class="panel-head"><span>COUNTRY RANKING</span></div>
+            <table>
+                <tr>
+                    <th>국가</th>
+                    <th>평균</th>
+                    <th>트렌드</th>
+                    <th>AI SCORE</th>
+                </tr>
+
+                {% for row in tables %}
+                <tr>
+                    <td>
+                        <span class="rank">{{ loop.index }}</span>
+                        <form method="post" action="/detail" style="display:inline;">
+                            <input type="hidden" name="country" value="{{row['국가명']}}">
+                            <input type="hidden" name="hs_code" value="{{hs_code}}">
+                            <input type="hidden" name="start" value="{{start}}">
+                            <input type="hidden" name="end" value="{{end}}">
+                            <input type="hidden" name="currency" value="{{selected_currency}}">
+                            <button type="submit" class="country-btn">{{row['국가명']}}</button>
+                        </form>
+                    </td>
+                    <td>{{row['평균']}}</td>
+                    <td>
+                        {% if row['트렌드'] == '상승' %}
+                        <span class="trend-up">&#9650; {{row['트렌드']}}</span>
+                        {% elif row['트렌드'] == '하락' %}
+                        <span class="trend-down">&#9660; {{row['트렌드']}}</span>
+                        {% else %}
+                        <span class="trend-flat">&#9644; {{row['트렌드']}}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="score-bar-wrap">
+                            <span class="score-bar"><span class="score-bar-fill" style="width:{{row['AI점수']}}%;"></span></span>
+                            <span>{{row['AI점수']}}</span>
+                        </span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+
+        <script>
+            var graph = {{ graphJSON | safe }};
+            var termLayout = Object.assign({}, graph.layout, {
+                paper_bgcolor:'#12161d',
+                plot_bgcolor:'#12161d',
+                font:{ family:'IBM Plex Mono, monospace', color:'#7c8798', size:11 },
+                xaxis:Object.assign({}, graph.layout.xaxis, {gridcolor:'#232935', zerolinecolor:'#232935'}),
+                yaxis:Object.assign({}, graph.layout.yaxis, {gridcolor:'#232935', zerolinecolor:'#232935'}),
+                margin:{t:20,r:20,b:40,l:60}
+            });
+            Plotly.newPlot('graph', graph.data, termLayout, {displayModeBar:false});
+        </script>
+
+    {% else %}
+        <div class="panel">
+            <div class="empty-state">품목과 기간을 입력하고 RUN을 실행하세요.</div>
+        </div>
+    {% endif %}
+
+    </div>
+</div>
+
+<script>
+$('#hs_select').select2({
+    placeholder: "품목 검색",
+    allowClear: true
+});
+
+function tickClock(){
+    var d = new Date();
+    var s = d.toTimeString().slice(0,8);
+    $('#clock').text(s);
+}
+tickClock();
+setInterval(tickClock, 1000);
+
+let interval = null;
+let lastPercent = null;
+let stallCount = 0;
+const STALL_LIMIT = 40; // 40 * 500ms = 20초 동안 진행률 변화 없으면 경고
+
+$('#analysisForm').on('submit', function(e){
+    e.preventDefault();
+
+    $('#progressBox').show();
+    $('#progressBox').css('border-color', 'var(--amber-dim)');
+    $('#progressText').text("ANALYSIS STARTED...");
+    $('#progressFill').css("width", "0%");
+    lastPercent = null;
+    stallCount = 0;
+
+    $.post("/start_analysis", $(this).serialize(), function(){
+
+        interval = setInterval(function(){
+
+            $.get("/progress", function(data){
+
+                // 🩹 FIX: 서버가 error 상태를 보내면 폴링 중단 + 안내
+                if (data.status === "error") {
+                    clearInterval(interval);
+                    $('#progressBox').css('border-color', 'var(--down)');
+                    $('#progressText').html('<span style="color:var(--down)">분석 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.</span>');
+                    return;
+                }
+
+                $('#progressText').text((data.current || '') + " 분석 중... (" + data.percent + "%)");
+                $('#progressFill').css("width", data.percent + "%");
+
+                // 🩹 FIX: 진행률이 일정 시간 안 변하면 "응답 지연" 안내
+                // (서버 예외 처리를 추가했지만, 혹시 모를 정체 상황에 대한
+                // 프론트엔드 안전장치)
+                if (data.percent === lastPercent) {
+                    stallCount++;
+                    if (stallCount === STALL_LIMIT) {
+                        $('#progressText').html(
+                            (data.current || '') + " 분석 중... (" + data.percent + "%) " +
+                            '<span style="color:var(--amber)">— 응답이 지연되고 있습니다. 계속 기다리거나 새로고침 후 다시 시도해보세요.</span>'
+                        );
+                    }
+                } else {
+                    lastPercent = data.percent;
+                    stallCount = 0;
+                }
+
+                if(data.status === "done"){
+                    clearInterval(interval);
+                    $('#progressText').text("ANALYSIS COMPLETE");
+
+                    $.post("/result", $('#analysisForm').serialize(), function(html){
+                        document.open();
+                        document.write(html);
+                        document.close();
+                    });
+                }
+            }).fail(function(){
+                // 🩹 FIX: /progress 요청 자체가 실패하는 경우(서버 다운 등)도 대비
+                stallCount++;
+                if (stallCount === STALL_LIMIT) {
+                    clearInterval(interval);
+                    $('#progressBox').css('border-color', 'var(--down)');
+                    $('#progressText').html('<span style="color:var(--down)">서버와 통신할 수 없습니다.</span>');
+                }
+            });
+
+        }, 500);
+    });
+});
+</script>
+
+</body>
+</html>
